@@ -1,0 +1,63 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+print("🔵 Loading the dataset...")
+df = pd.read_csv('Housing.csv')
+df.columns = df.columns.str.strip() 
+print("✅ Dataset loaded successfully!\n")
+print("📋 First few rows of the data:")
+print(df.head())
+print("\n🛠️ Checking for missing data...")
+print(df.isnull().sum())
+print("✅ No missing data found!\n")
+print("🛠️ Selecting important columns for prediction...")
+features = ['area', 'bedrooms']
+target = 'price'
+X = df[features]
+y = df[target]
+print(f"✅ Features selected: {features}, Target: {target}\n")
+print("🛠️ Splitting the data into Training and Testing sets...")
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+print("✅ Data split done! (80% training, 20% testing)\n")
+print("🛠️ Training the Linear Regression model...")
+model = LinearRegression()
+model.fit(X_train, y_train)
+print("✅ Model trained successfully!\n")
+print("🔮 Making predictions on the test set...")
+y_pred = model.predict(X_test)
+print("✅ Predictions done!\n")
+print("📊 Model Evaluation Results:")
+mae = mean_absolute_error(y_test, y_pred)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print(f"- Mean Absolute Error (MAE): {mae:.2f} (Average difference between actual and predicted prices)")
+print(f"- Mean Squared Error (MSE): {mse:.2f} (Penalizes bigger mistakes more)")
+print(f"- R-squared (R²) Score: {r2:.2f} (How good the model fits the data)")
+print("✅ Evaluation complete!\n")
+print("📋 Model Coefficients (How much each feature affects price):")
+for feature, coef in zip(features, model.coef_):
+    print(f"- '{feature}' ➔ change of {coef:.2f} in price per 1 unit increase")
+print(f"- Base price (Intercept): {model.intercept_:.2f}\n")
+print("📚 Final Price Prediction Formula:")
+equation = "price = "
+for i in range(len(features)):
+    equation += f"({model.coef_[i]:.2f} × {features[i]}) + "
+equation += f"({model.intercept_:.2f})"
+print(equation)
+print("\n✅ Now you can manually predict the price too!\n")
+print("🎨 Plotting Actual vs Predicted Prices...\n")
+plt.figure(figsize=(12, 6))
+y_test_reset = y_test.reset_index(drop=True)
+y_pred_reset = pd.Series(y_pred)
+plt.plot(y_test_reset, color='blue', marker='o', linestyle='-', label='Actual Price')
+plt.plot(y_pred_reset, color='red', marker='x', linestyle='--', label='Predicted Price')
+plt.title('Actual vs Predicted House Prices', fontsize=16)
+plt.xlabel('Sample Index', fontsize=14)
+plt.ylabel('House Price', fontsize=14)
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
